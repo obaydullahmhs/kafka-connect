@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: connect-demo
+  namespace: demo
+  labels:
+    app: connect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: connect
+  template:
+    metadata:
+      labels:
+        app: connect
+    spec:
+      containers:
+      - name: connect
+        image: obaydullahmhs/kafka-connect:latest
+        ports:
+        - containerPort: 8083
+        env:
+        - name: CONNECT_BOOTSTRAP_SERVERS
+          value: kafka-quickstart.demo.svc.cluster.local:19092
+        - name: MONGO_URI
+          value: mongodb://root:Y7UQamKkFosjkjdy@mgo-rs-pods.demo.svc.cluster.local:27017
+        - name: MONGO_DATABASE
+          value: test
+        - name: MONGO_COLLECTION
+          value: source
+        - name: AWS_ACCESS_KEY_ID
+          value: 73L9D6A9I8P9HY9I2DIX
+        - name: AWS_SECRET_ACCESS_KEY
+          value: gOQgiGqs062CHGziMIUNGERlJhF2WnaCBWCaIJzd
+        - name: AWS_REGION
+          value: ap-south-1
+        - name: S3_BUCKET_NAME
+          value: kafka-connect-o
+        - name: S3_ENDPOINT
+          value: ap-south-1.linodeobjects.com
+        - name: TOPICS_SINK
+          value: mongo.test.source

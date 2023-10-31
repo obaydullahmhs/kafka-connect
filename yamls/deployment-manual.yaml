@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: connect-demo
+  namespace: demo
+  labels:
+    app: connect
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: connect
+  template:
+    metadata:
+      labels:
+        app: connect
+    spec:
+      containers:
+      - name: connect
+        image: obaydullahmhs/kafka-connect:latest
+        ports:
+        - containerPort: 8083
+        env:
+        - name: CONNECT_BOOTSTRAP_SERVERS
+          value: kafka-quickstart.demo.svc.cluster.local:19092
