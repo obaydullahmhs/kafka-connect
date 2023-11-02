@@ -23,7 +23,7 @@ spec:
     matchLabels:
       app: connect-dis # has to match .spec.template.metadata.labels
   serviceName: "connect-dis"
-  replicas: 3 # by default is 1
+  replicas: 2 # by default is 1
   minReadySeconds: 10 # by default is 0
   template:
     metadata:
@@ -49,6 +49,12 @@ spec:
           value: "http://0.0.0.0:8083"
         - name: SERVICE_DNS
           value: "connect-dis.demo.svc.cluster.local"
+        - name: KAFKA_SASL_MECHANISM
+          value: PLAIN
+        - name: KAFKA_SECURITY_PROTOCOL
+          value: SASL_PLAINTEXT
+        - name: KAFKA_SASL_JAAS_CONFIG
+          value: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"admin\" password=\"xJPetLPBh3IBFtgh\";"
   volumeClaimTemplates:
   - metadata:
       name: www
