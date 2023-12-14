@@ -39,12 +39,14 @@ spec:
           name: web
         volumeMounts:
         - name: www
-          mountPath: /usr/share/connect/html
+          mountPath: /var/log/kafka
+        - name: www
+          mountPath: /var/lib/kafka
         env:
         - name: DISTRIBUTED
           value: "true"
         - name: CONNECT_BOOTSTRAP_SERVERS
-          value: kafka-quickstart.demo.svc.cluster.local:19092
+          value: kafka-prod-broker-0.kafka-prod-broker.demo.svc.cluster.local:9092,kafka-prod-broker-1.kafka-prod-broker.demo.svc.cluster.local:9092
         - name: CONNECT_LISTENERS
           value: "http://0.0.0.0:8083"
         - name: SERVICE_DNS
@@ -54,7 +56,7 @@ spec:
         - name: KAFKA_SECURITY_PROTOCOL
           value: SASL_PLAINTEXT
         - name: KAFKA_SASL_JAAS_CONFIG
-          value: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"admin\" password=\"xJPetLPBh3IBFtgh\";"
+          value: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"admin\" password=\"eG;GosAj2Z7Yij(Q\";"
   volumeClaimTemplates:
   - metadata:
       name: www

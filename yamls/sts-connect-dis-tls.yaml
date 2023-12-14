@@ -1,0 +1,145 @@
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: connect-dis-tls
+#   namespace: demo
+#   labels:
+#     app: connect-dis
+# spec:
+#   ports:
+#   - port: 8083
+#     name: web
+#   clusterIP: None
+#   selector:
+#     app: connect-dis
+# ---
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#   name: sts-con-dis-tls
+#   namespace: demo
+# spec:
+#   selector:
+#     matchLabels:
+#       app: connect-dis # has to match .spec.template.metadata.labels
+#   serviceName: "connect-dis"
+#   replicas: 2 # by default is 1
+#   minReadySeconds: 10 # by default is 0
+#   template:
+#     metadata:
+#       labels:
+#         app: connect-dis # has to match .spec.selector.matchLabels
+#     spec:
+#       terminationGracePeriodSeconds: 10
+#       containers:
+#       - name: connect-dis
+#         image: obaydullahmhs/kafka-connect:latest
+#         ports:
+#         - containerPort: 8083
+#           name: web
+#         volumeMounts:
+#         - name: tls
+#           mountPath: /opt/kafka/ssl
+#         env:
+#         - name: DISTRIBUTED
+#           value: "true"
+#         - name: CONNECT_BOOTSTRAP_SERVERS
+#           value: kf-tls.demo.svc.cluster.local:19092
+#         - name: CONNECT_LISTENERS
+#           value: "http://0.0.0.0:8083"
+#         - name: SERVICE_DNS
+#           value: "connect-dis-tls.demo.svc.cluster.local"
+#         - name: KAFKA_SASL_MECHANISM
+#           value: PLAIN
+#         - name: KAFKA_SECURITY_PROTOCOL
+#           value: SASL_SSL
+#         - name: KAFKA_SASL_JAAS_CONFIG
+#           value: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"admin\" password=\"EhWk!t7uRG!cBWZV\";"
+#         - name: KAFKA_SSL_KEYSTORE_LOCATION
+#           value: /opt/kafka/ssl/client.keystore.jks
+#         - name: KAFKA_SSL_KEYSTORE_PASSWORD
+#           value: "zrvl4p8klzdj"
+#         - name: KAFKA_SSL_TRUSTSTORE_LOCATION
+#           value: /opt/kafka/ssl/client.truststore.jks
+#         - name: KAFKA_SSL_TRUSTSTORE_PASSWORD
+#           value: "zrvl4p8klzdj"
+#         - name: KAFKA_SSL_KEY_PASSWORD
+#           value: "zrvl4p8klzdj"
+#       volumes:
+#       - name: tls
+#         secret:
+#           defaultMode: 420
+#           items:
+#           - key: truststore.jks
+#             path: client.truststore.jks
+#           - key: keystore.jks
+#             path: client.keystore.jks
+#           secretName: kf-tls-client-cert
+#   volumeClaimTemplates:
+#   - metadata:
+#       name: www
+#     spec:
+#       accessModes: [ "ReadWriteOnce" ]
+#       storageClassName: "linode-block-storage" # "standard" if you run on kind cluster
+#       resources:
+#         requests:
+#           storage: 1Gi
+# ---
+apiVersion: kubedb.com/v1alpha2
+kind: Kafka
+metadata:
+  name: kafka-one
+  namespace: demo-sec
+spec:
+  disableSecurity: true
+  version: 3.6.0
+  podTemplate:
+    spec:
+      containerSecurityContext:
+        allowPrivilegeEscalation: false
+        capabilities:
+          drop:
+          - ALL
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+  topology:
+    broker:
+      replicas: 2
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+    controller:
+      replicas: 2
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: standard
+  cruiseControl:
+    suffix: "cc"
+    replicas: 1
+    podTemplate:
+      spec:
+        containerSecurityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsNonRoot: true
+          runAsUser: 1001
+          seccompProfile:
+            type: RuntimeDefault
+        resources:
+          limits:
+            cpu: 1.5
+          requests:
+            cpu: 800m
+            memory: "1Gi"
